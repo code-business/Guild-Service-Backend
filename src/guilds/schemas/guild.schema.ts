@@ -6,10 +6,10 @@ export type GuildDocument = HydratedDocument<Guild>;
 
 @Schema()
 export class Guild {
-    @Prop()
+    @Prop({ required: true })
     name: string;
 
-    @Prop()
+    @Prop({ required: true })
     age: number;
 }
 
