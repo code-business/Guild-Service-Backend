@@ -1,7 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { GuildsService } from './guilds.service';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { CreateGuildDto } from './dto/create-guild.dto';
 import { UpdateGuildDto } from './dto/update-guild.dto';
+import { GuildsService } from './guilds.service';
 
 @Controller('guilds')
 export class GuildsController {
