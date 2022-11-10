@@ -1,17 +1,49 @@
 /* eslint-disable prettier/prettier */
-import { IsNotEmpty } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty } from 'class-validator';
 
 export class CreateGuildDto {
     @IsNotEmpty()
-    @ApiProperty({
-        default: 'Rahul Patil',
-    })
-    name: string;
+    @ApiProperty()
+    requesterDetails: string;
 
     @IsNotEmpty()
-    @ApiProperty({
-        default: 24
-    })
-    age: string;
+    @ApiProperty()
+    requesterPublicKey: string;
+
+    @IsNotEmpty()
+    @ApiProperty()
+    lenderPublicKey: string;
+
+    @IsNotEmpty()
+    @ApiProperty()
+    badgePublicKey: string;
+
+    @IsNotEmpty()
+    @ApiProperty()
+    badgeType: string;
+
+    @IsNotEmpty()
+    @ApiProperty()
+    allotmentDate: string;
+
+    @IsNotEmpty()
+    @ApiProperty()
+    revokeDate: string;
+
+    @IsNotEmpty()
+    @ApiProperty()
+    revokeReason: string;
+
+    @IsNotEmpty()
+    @ApiProperty()
+    lenderborrowerType: string;
+
+    @IsNotEmpty()
+    @ApiProperty()
+    status: string;
+
+    @IsNotEmpty()
+    @ApiProperty()
+    requestedOn: string;
 }
