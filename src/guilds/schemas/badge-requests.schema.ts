@@ -9,7 +9,13 @@ export class BadgeRequests {
   requesterDetails: string;
 
   @Prop({ required: true })
+  requesterUserId: string;
+
+  @Prop({ required: true })
   requesterPublicKey: string;
+
+  @Prop({ required: true })
+  lenderUserId: string;
 
   @Prop({ required: true })
   lenderPublicKey: string;

@@ -8,7 +8,15 @@ export class CreateBadgeRequestDto {
 
   @IsNotEmpty()
   @ApiProperty()
+  requesterUserId: string;
+
+  @IsNotEmpty()
+  @ApiProperty()
   requesterPublicKey: string;
+
+  @IsNotEmpty()
+  @ApiProperty()
+  lenderUserId: string;
 
   @IsNotEmpty()
   @ApiProperty()
