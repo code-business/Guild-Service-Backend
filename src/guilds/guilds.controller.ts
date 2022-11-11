@@ -1,15 +1,9 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { CreateGuildDto } from './dto/create-guild.dto';
-import { UpdateGuildDto } from './dto/update-guild.dto';
+import { CreateBadgeRequestDto } from './dto/create-badge-request.dto';
+import { CreateBorrowerEarningHistoryDto } from './dto/create-borrower-earning-history.dto';
+import { CreateBorrowerEarningStatDto } from './dto/create-borrower-earning-stat.dto';
+import { CreateLenderInfoDto } from './dto/create-lender-info.dto';
 import { GuildsService } from './guilds.service';
 
 @ApiTags('guilds')
@@ -17,28 +11,51 @@ import { GuildsService } from './guilds.service';
 export class GuildsController {
   constructor(private readonly guildsService: GuildsService) {}
 
-  @Post()
-  create(@Body() createGuildDto: CreateGuildDto) {
-    return this.guildsService.create(createGuildDto);
+  @Post('createBadgeRequest')
+  createBadgeRequest(@Body() createBadgeRequestDto: CreateBadgeRequestDto) {
+    return this.guildsService.createBadgeRequest(createBadgeRequestDto);
   }
 
-  @Get()
-  findAll() {
-    return this.guildsService.findAll();
+  @Post('createBorrowerEarningStat')
+  createBorrowerEarningStat(
+    @Body() createBorrowerEarningStatDto: CreateBorrowerEarningStatDto,
+  ) {
+    return this.guildsService.createBorrowerEarningStat(
+      createBorrowerEarningStatDto,
+    );
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.guildsService.findOne(+id);
+  @Post('createBorrowerEarningHistory')
+  createBorrowerEarningHistory(
+    @Body() createBorrowerEarningHistoryDto: CreateBorrowerEarningHistoryDto,
+  ) {
+    return this.guildsService.createBorrowerEarningHistory(
+      createBorrowerEarningHistoryDto,
+    );
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateGuildDto: UpdateGuildDto) {
-    return this.guildsService.update(+id, updateGuildDto);
+  @Post('createLenderInfo')
+  createLenderInfo(@Body() createLenderInfoDto: CreateLenderInfoDto) {
+    return this.guildsService.createLenderInfo(createLenderInfoDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.guildsService.remove(+id);
+  @Get('getAllBadgeRequests')
+  getAllBadgeRequests() {
+    return this.guildsService.getAllBadgeRequests();
+  }
+
+  @Get('getAllBorrowerEarningStats')
+  getAllBorrowerEarningStats() {
+    return this.guildsService.getAllBorrowerEarningStats();
+  }
+
+  @Get('getAllBorrowerEarningHistory')
+  getAllBorrowerEarningHistory() {
+    return this.guildsService.getAllBorrowerEarningHistory();
+  }
+
+  @Get('getAllLendingInfo')
+  getAllLendingInfo() {
+    return this.guildsService.getAllLenderInfo();
   }
 }

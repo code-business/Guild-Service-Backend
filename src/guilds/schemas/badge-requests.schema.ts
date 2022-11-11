@@ -1,10 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
-export type GuildDocument = HydratedDocument<Guild>;
+export type BadgeRequestsDocument = HydratedDocument<BadgeRequests>;
 
 @Schema({ timestamps: true, versionKey: false })
-export class Guild {
+export class BadgeRequests {
   @Prop({ required: true })
   requesterDetails: string;
 
@@ -39,4 +39,4 @@ export class Guild {
   requestedOn: string;
 }
 
-export const GuildSchema = SchemaFactory.createForClass(Guild);
+export const BadgeRequestsSchema = SchemaFactory.createForClass(BadgeRequests);

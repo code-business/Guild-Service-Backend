@@ -1,36 +1,80 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { CreateGuildDto } from './dto/create-guild.dto';
-import { UpdateGuildDto } from './dto/update-guild.dto';
-import { Guild, GuildDocument } from './schemas/guild.schema';
+import { CreateBadgeRequestDto } from './dto/create-badge-request.dto';
+import { CreateBorrowerEarningHistoryDto } from './dto/create-borrower-earning-history.dto';
+import { CreateBorrowerEarningStatDto } from './dto/create-borrower-earning-stat.dto';
+import { CreateLenderInfoDto } from './dto/create-lender-info.dto';
+import {
+  BadgeRequests,
+  BadgeRequestsDocument,
+} from './schemas/badge-requests.schema';
+import {
+  BorrowerEarningHistory,
+  BorrowerEarningHistoryDocument,
+} from './schemas/borrower-earning-history.schema';
+import {
+  BorrowerEarningStat,
+  BorrowerEarningStatDocument,
+} from './schemas/borrower-earning-stat.schema';
+import { LenderInfo, LenderInfoDocument } from './schemas/lender-info.schema';
 
 @Injectable()
 export class GuildsService {
   constructor(
-    @InjectModel(Guild.name) private guildModel: Model<GuildDocument>,
+    @InjectModel(BadgeRequests.name)
+    private badgeRequestsModel: Model<BadgeRequestsDocument>,
+    @InjectModel(BorrowerEarningStat.name)
+    private borrowerEarningStatModel: Model<BorrowerEarningStatDocument>,
+    @InjectModel(BorrowerEarningHistory.name)
+    private borrowerEarningHistoryModel: Model<BorrowerEarningHistoryDocument>,
+    @InjectModel(LenderInfo.name)
+    private lenderInfoModel: Model<LenderInfoDocument>,
   ) {}
 
-  create(createGuildDto: CreateGuildDto) {
-    const createdGuild = new this.guildModel(createGuildDto);
-    return createdGuild.save();
-    // return 'This action adds a new guild';
+  createBadgeRequest(createBadgeRequestDto: CreateBadgeRequestDto) {
+    const createdBadgeRequest = new this.badgeRequestsModel(
+      createBadgeRequestDto,
+    );
+    return createdBadgeRequest.save();
   }
 
-  findAll() {
-    return this.guildModel.find().exec();
-    // return `This action returns all guilds`;
+  createBorrowerEarningStat(
+    createBorrowerEarningStatDto: CreateBorrowerEarningStatDto,
+  ) {
+    const createdBorrowerEarningStat = new this.borrowerEarningStatModel(
+      createBorrowerEarningStatDto,
+    );
+    return createdBorrowerEarningStat.save();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} guild`;
+  createBorrowerEarningHistory(
+    createBorrowerEarningHistoryDto: CreateBorrowerEarningHistoryDto,
+  ) {
+    const createdBorrowerEarningHistory = new this.borrowerEarningHistoryModel(
+      createBorrowerEarningHistoryDto,
+    );
+    return createdBorrowerEarningHistory.save();
   }
 
-  update(id: number, updateGuildDto: UpdateGuildDto) {
-    return `This action updates a #${id} guild`;
+  createLenderInfo(createLenderInfoDto: CreateLenderInfoDto) {
+    const createdLenderInfo = new this.lenderInfoModel(createLenderInfoDto);
+    return createdLenderInfo.save();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} guild`;
+  getAllBadgeRequests() {
+    return this.badgeRequestsModel.find().exec();
+  }
+
+  getAllBorrowerEarningStats() {
+    return this.borrowerEarningStatModel.find().exec();
+  }
+
+  getAllBorrowerEarningHistory() {
+    return this.borrowerEarningHistoryModel.find().exec();
+  }
+
+  getAllLenderInfo() {
+    return this.lenderInfoModel.find().exec();
   }
 }

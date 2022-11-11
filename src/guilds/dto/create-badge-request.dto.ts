@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty } from 'class-validator';
 
-export class CreateGuildDto {
+export class CreateBadgeRequestDto {
   @IsNotEmpty()
   @ApiProperty()
   requesterDetails: string;
