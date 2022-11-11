@@ -32,6 +32,10 @@ export class GuildsService {
     private lenderInfoModel: Model<LenderInfoDocument>,
   ) {}
 
+  totalBadgeRequests(userId: string) {
+    return this.badgeRequestsModel.count({ requesterUserId: userId });
+  }
+
   createBadgeRequest(createBadgeRequestDto: CreateBadgeRequestDto) {
     const createdBadgeRequest = new this.badgeRequestsModel(
       createBadgeRequestDto,

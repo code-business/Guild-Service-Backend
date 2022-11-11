@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateBadgeRequestDto } from './dto/create-badge-request.dto';
 import { CreateBorrowerEarningHistoryDto } from './dto/create-borrower-earning-history.dto';
@@ -10,6 +10,11 @@ import { GuildsService } from './guilds.service';
 @Controller('guilds')
 export class GuildsController {
   constructor(private readonly guildsService: GuildsService) {}
+
+  @Get('totalBadgeRequests/:userId')
+  totalBadgeRequests(@Param('userId') userId: string) {
+    return this.guildsService.totalBadgeRequests(userId);
+  }
 
   @Post('createBadgeRequest')
   createBadgeRequest(@Body() createBadgeRequestDto: CreateBadgeRequestDto) {
