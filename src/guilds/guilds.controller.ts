@@ -11,14 +11,18 @@ import { GuildsService } from './guilds.service';
 export class GuildsController {
   constructor(private readonly guildsService: GuildsService) {}
 
-  @Get('totalBadgeRequests/:userId')
-  totalBadgeRequests(@Param('userId') userId: string) {
-    return this.guildsService.totalBadgeRequests(userId);
-  }
-
   @Post('createBadgeRequest')
   createBadgeRequest(@Body() createBadgeRequestDto: CreateBadgeRequestDto) {
     return this.guildsService.createBadgeRequest(createBadgeRequestDto);
+  }
+
+  @Get('getLiveBadgeRequests')
+  async getLiveBadgeRequests() {
+    const liveBadgeRequests = await this.guildsService.getLiveBadgeRequests();
+    return {
+      data: liveBadgeRequests,
+      count: liveBadgeRequests.length,
+    };
   }
 
   @Post('createBorrowerEarningStat')

@@ -32,15 +32,15 @@ export class GuildsService {
     private lenderInfoModel: Model<LenderInfoDocument>,
   ) {}
 
-  totalBadgeRequests(userId: string) {
-    return this.badgeRequestsModel.count({ requesterUserId: userId });
-  }
-
   createBadgeRequest(createBadgeRequestDto: CreateBadgeRequestDto) {
     const createdBadgeRequest = new this.badgeRequestsModel(
       createBadgeRequestDto,
     );
     return createdBadgeRequest.save();
+  }
+
+  getLiveBadgeRequests() {
+    return this.badgeRequestsModel.find({ status: 'live' }).exec();
   }
 
   createBorrowerEarningStat(

@@ -5,44 +5,50 @@ export type BadgeRequestsDocument = HydratedDocument<BadgeRequests>;
 
 @Schema({ timestamps: true, versionKey: false })
 export class BadgeRequests {
-  @Prop({ required: true })
-  requesterDetails: string;
+  @Prop()
+  borrowername: string;
 
-  @Prop({ required: true })
-  requesterUserId: string;
+  @Prop()
+  profilePic: string;
 
-  @Prop({ required: true })
+  @Prop()
+  joinDate: string;
+
+  @Prop()
+  totalVideosUploaded: string;
+
+  @Prop()
+  followers: string;
+
+  @Prop()
+  following: string;
+
+  @Prop()
   requesterPublicKey: string;
 
-  @Prop({ required: true })
-  lenderUserId: string;
-
-  @Prop({ required: true })
+  @Prop()
   lenderPublicKey: string;
 
-  @Prop({ required: true })
+  @Prop()
   badgePublicKey: string;
 
-  @Prop({ required: true })
+  @Prop()
   badgeType: string;
 
-  @Prop({ required: true })
+  @Prop()
   allotmentDate: string;
 
-  @Prop({ required: true })
+  @Prop()
   revokeDate: string;
 
-  @Prop({ required: true })
+  @Prop()
   revokeReason: string;
 
-  @Prop({ required: true })
-  lenderborrowerType: string;
+  @Prop()
+  walletType: string;
 
-  @Prop({ required: true })
+  @Prop()
   status: string;
-
-  @Prop({ required: true })
-  requestedOn: string;
 }
 
 export const BadgeRequestsSchema = SchemaFactory.createForClass(BadgeRequests);
