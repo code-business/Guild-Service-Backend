@@ -1,16 +1,24 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber } from 'class-validator';
+import { IsNotEmpty } from 'class-validator';
 
 export class CreateBadgeRequestDto {
   @IsNotEmpty()
   @ApiProperty({
-    default: 'Katherine',
+    default: '1a',
   })
-  borrowername: string;
+  requesterId: string;
 
   @IsNotEmpty()
-  @ApiProperty()
-  profilePic: string;
+  @ApiProperty({
+    default: '1a2b',
+  })
+  requesterPublicKey: string;
+
+  @IsNotEmpty()
+  @ApiProperty({
+    default: 'Akshay Pisal',
+  })
+  name: string;
 
   @IsNotEmpty()
   @ApiProperty({
@@ -18,43 +26,9 @@ export class CreateBadgeRequestDto {
   })
   joinDate: string;
 
-  @IsNumber()
-  @ApiProperty({
-    default: 14,
-  })
-  totalVideosUploaded: number;
-
   @IsNotEmpty()
   @ApiProperty({
-    default: '12K',
-  })
-  followers: string;
-
-  @IsNotEmpty()
-  @ApiProperty({
-    default: '4K',
-  })
-  following: string;
-
-  @IsNotEmpty()
-  @ApiProperty()
-  requesterPublicKey: string;
-
-  @IsNotEmpty()
-  @ApiProperty({
-    default: 'User 2X',
+    default: 'Creator 2X',
   })
   badgeType: string;
-
-  @IsNotEmpty()
-  @ApiProperty({
-    default: 'Phantom',
-  })
-  walletType: string;
-
-  @IsNotEmpty()
-  @ApiProperty({
-    default: 'live',
-  })
-  status: string;
 }

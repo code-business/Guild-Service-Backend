@@ -2,83 +2,42 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateBadgeRequestDto } from './dto/create-badge-request.dto';
-import { CreateBorrowerEarningHistoryDto } from './dto/create-borrower-earning-history.dto';
-import { CreateBorrowerEarningStatDto } from './dto/create-borrower-earning-stat.dto';
-import { CreateLenderInfoDto } from './dto/create-lender-info.dto';
 import {
   BadgeRequests,
   BadgeRequestsDocument,
 } from './schemas/badge-requests.schema';
-import {
-  BorrowerEarningHistory,
-  BorrowerEarningHistoryDocument,
-} from './schemas/borrower-earning-history.schema';
-import {
-  BorrowerEarningStat,
-  BorrowerEarningStatDocument,
-} from './schemas/borrower-earning-stat.schema';
-import { LenderInfo, LenderInfoDocument } from './schemas/lender-info.schema';
 
 @Injectable()
 export class GuildsService {
   constructor(
     @InjectModel(BadgeRequests.name)
     private badgeRequestsModel: Model<BadgeRequestsDocument>,
-    @InjectModel(BorrowerEarningStat.name)
-    private borrowerEarningStatModel: Model<BorrowerEarningStatDocument>,
-    @InjectModel(BorrowerEarningHistory.name)
-    private borrowerEarningHistoryModel: Model<BorrowerEarningHistoryDocument>,
-    @InjectModel(LenderInfo.name)
-    private lenderInfoModel: Model<LenderInfoDocument>,
   ) {}
 
   createBadgeRequest(createBadgeRequestDto: CreateBadgeRequestDto) {
-    const createdBadgeRequest = new this.badgeRequestsModel(
-      createBadgeRequestDto,
-    );
+    const createdBadgeRequest = new this.badgeRequestsModel({
+      ...createBadgeRequestDto,
+      status: 'live',
+    });
     return createdBadgeRequest.save();
+  }
+
+  getUserData(userIds) {
+    return userIds.map(() => ({
+      totalVideosUploaded: 10,
+      followers: 100,
+      following: 1000,
+    }));
+  }
+
+  getUserStats(userIds) {
+    return userIds.map(() => ({
+      contributionScore: 67,
+      gariEarnedViaMining: 2400,
+    }));
   }
 
   getLiveBadgeRequests() {
     return this.badgeRequestsModel.find({ status: 'live' }).exec();
-  }
-
-  createBorrowerEarningStat(
-    createBorrowerEarningStatDto: CreateBorrowerEarningStatDto,
-  ) {
-    const createdBorrowerEarningStat = new this.borrowerEarningStatModel(
-      createBorrowerEarningStatDto,
-    );
-    return createdBorrowerEarningStat.save();
-  }
-
-  createBorrowerEarningHistory(
-    createBorrowerEarningHistoryDto: CreateBorrowerEarningHistoryDto,
-  ) {
-    const createdBorrowerEarningHistory = new this.borrowerEarningHistoryModel(
-      createBorrowerEarningHistoryDto,
-    );
-    return createdBorrowerEarningHistory.save();
-  }
-
-  createLenderInfo(createLenderInfoDto: CreateLenderInfoDto) {
-    const createdLenderInfo = new this.lenderInfoModel(createLenderInfoDto);
-    return createdLenderInfo.save();
-  }
-
-  getAllBadgeRequests() {
-    return this.badgeRequestsModel.find().exec();
-  }
-
-  getAllBorrowerEarningStats() {
-    return this.borrowerEarningStatModel.find().exec();
-  }
-
-  getAllBorrowerEarningHistory() {
-    return this.borrowerEarningHistoryModel.find().exec();
-  }
-
-  getAllLenderInfo() {
-    return this.lenderInfoModel.find().exec();
   }
 }

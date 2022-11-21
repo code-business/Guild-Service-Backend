@@ -6,34 +6,28 @@ export type BadgeRequestsDocument = HydratedDocument<BadgeRequests>;
 @Schema({ timestamps: true, versionKey: false })
 export class BadgeRequests {
   @Prop()
-  borrowername: string;
-
-  @Prop()
-  profilePic: string;
-
-  @Prop()
-  joinDate: string;
-
-  @Prop()
-  totalVideosUploaded: string;
-
-  @Prop()
-  followers: string;
-
-  @Prop()
-  following: string;
+  requesterId: string;
 
   @Prop()
   requesterPublicKey: string;
 
   @Prop()
+  name: string;
+
+  @Prop()
+  joinDate: string;
+
+  @Prop()
+  lenderId: string;
+
+  @Prop()
   lenderPublicKey: string;
 
   @Prop()
-  badgePublicKey: string;
+  badgeType: string;
 
   @Prop()
-  badgeType: string;
+  badgePublicKey: string;
 
   @Prop()
   allotmentDate: string;
@@ -43,9 +37,6 @@ export class BadgeRequests {
 
   @Prop()
   revokeReason: string;
-
-  @Prop()
-  walletType: string;
 
   @Prop()
   status: string;

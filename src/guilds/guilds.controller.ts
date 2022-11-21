@@ -1,9 +1,6 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateBadgeRequestDto } from './dto/create-badge-request.dto';
-import { CreateBorrowerEarningHistoryDto } from './dto/create-borrower-earning-history.dto';
-import { CreateBorrowerEarningStatDto } from './dto/create-borrower-earning-stat.dto';
-import { CreateLenderInfoDto } from './dto/create-lender-info.dto';
 import { GuildsService } from './guilds.service';
 
 @ApiTags('guilds')
@@ -19,52 +16,24 @@ export class GuildsController {
   @Get('getLiveBadgeRequests')
   async getLiveBadgeRequests() {
     const liveBadgeRequests = await this.guildsService.getLiveBadgeRequests();
-    return {
-      data: liveBadgeRequests,
-      count: liveBadgeRequests.length,
-    };
-  }
-
-  @Post('createBorrowerEarningStat')
-  createBorrowerEarningStat(
-    @Body() createBorrowerEarningStatDto: CreateBorrowerEarningStatDto,
-  ) {
-    return this.guildsService.createBorrowerEarningStat(
-      createBorrowerEarningStatDto,
+    const userIds = liveBadgeRequests.map((req) => req.requesterId);
+    const userData = this.guildsService.getUserData(userIds);
+    const userStats = this.guildsService.getUserStats(userIds);
+    const response = liveBadgeRequests.map(
+      (
+        { _id, requesterId, requesterPublicKey, name, joinDate, badgeType },
+        index,
+      ) => ({
+        _id,
+        requesterId,
+        requesterPublicKey,
+        name,
+        joinDate,
+        badgeType,
+        ...userData[index],
+        ...userStats[index],
+      }),
     );
-  }
-
-  @Post('createBorrowerEarningHistory')
-  createBorrowerEarningHistory(
-    @Body() createBorrowerEarningHistoryDto: CreateBorrowerEarningHistoryDto,
-  ) {
-    return this.guildsService.createBorrowerEarningHistory(
-      createBorrowerEarningHistoryDto,
-    );
-  }
-
-  @Post('createLenderInfo')
-  createLenderInfo(@Body() createLenderInfoDto: CreateLenderInfoDto) {
-    return this.guildsService.createLenderInfo(createLenderInfoDto);
-  }
-
-  @Get('getAllBadgeRequests')
-  getAllBadgeRequests() {
-    return this.guildsService.getAllBadgeRequests();
-  }
-
-  @Get('getAllBorrowerEarningStats')
-  getAllBorrowerEarningStats() {
-    return this.guildsService.getAllBorrowerEarningStats();
-  }
-
-  @Get('getAllBorrowerEarningHistory')
-  getAllBorrowerEarningHistory() {
-    return this.guildsService.getAllBorrowerEarningHistory();
-  }
-
-  @Get('getAllLendingInfo')
-  getAllLendingInfo() {
-    return this.guildsService.getAllLenderInfo();
+    return response;
   }
 }
