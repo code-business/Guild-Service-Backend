@@ -12,12 +12,6 @@ export class BadgeRequests {
   requesterPublicKey: string;
 
   @Prop()
-  name: string;
-
-  @Prop()
-  joinDate: string;
-
-  @Prop()
   lenderId: string;
 
   @Prop()
@@ -30,10 +24,10 @@ export class BadgeRequests {
   badgePublicKey: string;
 
   @Prop()
-  allotmentDate: string;
+  allotmentDate: Date;
 
   @Prop()
-  revokeDate: string;
+  revokeDate: Date;
 
   @Prop()
   revokeReason: string;

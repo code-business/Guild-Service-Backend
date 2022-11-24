@@ -1,6 +1,9 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { CreateBadgeRequestDto } from './dto/create-badge-request.dto';
+import { BuyBadgeDto } from './dto/buy-badge.dto';
+import { UpdateBadgeHistoryDto } from './dto/update-badge-history.dto';
+import { CreateBadgeTransactionDto } from './dto/create-badge-transaction.dto';
+import { RaiseBadgeRequestDto } from './dto/raise-badge-request.dto';
 import { GuildsService } from './guilds.service';
 
 @ApiTags('guilds')
@@ -8,32 +11,37 @@ import { GuildsService } from './guilds.service';
 export class GuildsController {
   constructor(private readonly guildsService: GuildsService) {}
 
-  @Post('createBadgeRequest')
-  createBadgeRequest(@Body() createBadgeRequestDto: CreateBadgeRequestDto) {
-    return this.guildsService.createBadgeRequest(createBadgeRequestDto);
+  @Post('raiseBadgeRequest')
+  raiseBadgeRequest(@Body() body: RaiseBadgeRequestDto) {
+    body.status = 'pending';
+    return this.guildsService.raiseBadgeRequest(body);
+  }
+
+  @Get('cancelBadgeRequest/:id')
+  cancelBadgeRequest(@Param('id') id: string) {
+    return this.guildsService.cancelBadgeRequest(id);
   }
 
   @Get('getLiveBadgeRequests')
   async getLiveBadgeRequests() {
     const liveBadgeRequests = await this.guildsService.getLiveBadgeRequests();
     const userIds = liveBadgeRequests.map((req) => req.requesterId);
-    const userData = this.guildsService.getUserData(userIds);
-    const userStats = this.guildsService.getUserStats(userIds);
-    const response = liveBadgeRequests.map(
-      (
-        { _id, requesterId, requesterPublicKey, name, joinDate, badgeType },
-        index,
-      ) => ({
-        _id,
-        requesterId,
-        requesterPublicKey,
-        name,
-        joinDate,
-        badgeType,
-        ...userData[index],
-        ...userStats[index],
-      }),
-    );
-    return response;
+    const minerInfo = this.guildsService.getMinerInfo(userIds);
+    return liveBadgeRequests.map((request, index) => ({
+      ...request,
+      ...minerInfo[index],
+    }));
+  }
+
+  @Post('buyBadge')
+  async buyBadge(@Body() body: BuyBadgeDto) {
+    body.status = 'draft';
+    return await this.guildsService.buyBadge(body);
+  }
+
+  @Post('updateBadgeHistory')
+  updateBadgeHistory(@Body() body: UpdateBadgeHistoryDto) {
+    body.status = 'pending';
+    return this.guildsService.updateBadgeHistory(body);
   }
 }

@@ -1,3 +1,4 @@
+import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { GuildsController } from './guilds.controller';
@@ -7,29 +8,17 @@ import {
   BadgeRequestsSchema,
 } from './schemas/badge-requests.schema';
 import {
-  BorrowerEarningHistory,
-  BorrowerEarningHistorySchema,
-} from './schemas/borrower-earning-history.schema';
-import {
-  BorrowerEarningStat,
-  BorrowerEarningStatSchema,
-} from './schemas/borrower-earning-stat.schema';
-import { LenderInfo, LenderInfoSchema } from './schemas/lender-info.schema';
+  BadgeHistory,
+  BadgeHistorySchema,
+} from './schemas/badge-history.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: BadgeRequests.name, schema: BadgeRequestsSchema },
-      { name: BorrowerEarningStat.name, schema: BorrowerEarningStatSchema },
-      {
-        name: BorrowerEarningHistory.name,
-        schema: BorrowerEarningHistorySchema,
-      },
-      {
-        name: LenderInfo.name,
-        schema: LenderInfoSchema,
-      },
+      { name: BadgeHistory.name, schema: BadgeHistorySchema },
     ]),
+    HttpModule,
   ],
   controllers: [GuildsController],
   providers: [GuildsService],

@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty } from 'class-validator';
 
-export class CreateBadgeRequestDto {
+export class RaiseBadgeRequestDto {
   @IsNotEmpty()
   @ApiProperty({
     default: '1a',
@@ -16,19 +16,9 @@ export class CreateBadgeRequestDto {
 
   @IsNotEmpty()
   @ApiProperty({
-    default: 'Akshay Pisal',
-  })
-  name: string;
-
-  @IsNotEmpty()
-  @ApiProperty({
-    default: '12 Aug, 2022',
-  })
-  joinDate: string;
-
-  @IsNotEmpty()
-  @ApiProperty({
-    default: 'Creator 2X',
+    default: 'Creator',
   })
   badgeType: string;
+
+  status: string;
 }
