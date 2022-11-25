@@ -1,10 +1,16 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import {
+  createAssociatedTokenAccountInstruction,
+  createTransferCheckedInstruction,
+  getAssociatedTokenAddress,
+} from '@solana/spl-token';
+import { PublicKey, Transaction } from '@solana/web3.js';
 import { Model } from 'mongoose';
 import { BuyBadgeDto } from './dto/buy-badge.dto';
-import { CreateBadgeTransactionDto } from './dto/create-badge-transaction.dto';
 import { RaiseBadgeRequestDto } from './dto/raise-badge-request.dto';
+import { RentBadgeDto } from './dto/rent-badge.dto';
 import { UpdateBadgeHistoryDto } from './dto/update-badge-history.dto';
 import {
   BadgeHistory,
@@ -14,9 +20,12 @@ import {
   BadgeRequests,
   BadgeRequestsDocument,
 } from './schemas/badge-requests.schema';
+import { Connection, clusterApiUrl } from '@solana/web3.js';
 
 @Injectable()
 export class GuildsService {
+  private connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
+
   constructor(
     @InjectModel(BadgeRequests.name)
     private badgeRequestsModel: Model<BadgeRequestsDocument>,
@@ -69,6 +78,10 @@ export class GuildsService {
     return { id: badgeHistory._id, ...response.data };
   }
 
+  async getBadges(publicKey: string) {
+    return this.badgeHistoryModel.find({ publicKey }).lean();
+  }
+
   updateBadgeHistory(body: UpdateBadgeHistoryDto) {
     const { id, mint, signature, status } = body;
     return this.badgeHistoryModel.findByIdAndUpdate(
@@ -78,33 +91,47 @@ export class GuildsService {
     );
   }
 
-  /* async getTokens() {
-    const tokens = await this.badgeHistoryModel
-      .find({ status: 'success' })
-      .exec();
-    const metadata = tokens.map(async (token) => {
-      const url = await this.httpService.axiosRef.get(
-        `https://dev-nft-badge.chingari.io/api/nft/getMetaData?mint=${token.mint}`,
-      );
-      const response = await this.httpService.axiosRef.get(url.data);
-      return token;
-    });
-    return await Promise.all(metadata);
-  }
+  async rentBadge(body: RentBadgeDto) {
+    const { lenderPublicKey, borrowerPublicKey, mint } = body;
+    const tokenAccountXPubkey = await getAssociatedTokenAddress(
+      new PublicKey(mint),
+      new PublicKey(lenderPublicKey),
+    );
 
-  async createBadgeTransaction(
-    createBadgeTransactionDto: CreateBadgeTransactionDto,
-  ) {
-    const filter = { _id: createBadgeTransactionDto.requestId };
-    const update = {
-      lenderId: createBadgeTransactionDto.lenderId,
-      lenderPublicKey: createBadgeTransactionDto.lenderPublicKey,
-      badgePublicKey: createBadgeTransactionDto.badgePublicKey,
-      allotmentDate: createBadgeTransactionDto.allotmentDate,
-      status: 'rented',
-    };
-    return await this.badgeRequestsModel.findOneAndUpdate(filter, update, {
-      new: true,
-    });
-  } */
+    const tokenAccountYPubkey = await getAssociatedTokenAddress(
+      new PublicKey(mint),
+      new PublicKey(borrowerPublicKey),
+    );
+
+    const tx = new Transaction();
+
+    const blockhashObj = await this.connection.getRecentBlockhash();
+    tx.recentBlockhash = blockhashObj.blockhash;
+    tx.feePayer = new PublicKey(lenderPublicKey);
+
+    tx.add(
+      createAssociatedTokenAccountInstruction(
+        new PublicKey(lenderPublicKey),
+        tokenAccountYPubkey,
+        new PublicKey(borrowerPublicKey),
+        new PublicKey(mint),
+      ),
+    );
+
+    tx.add(
+      createTransferCheckedInstruction(
+        tokenAccountXPubkey, // from (should be a token account)
+        new PublicKey(mint), // mint
+        tokenAccountYPubkey, // to (should be a token account)
+        new PublicKey(lenderPublicKey), // from's owner
+        1, // amount, if your deciamls is 8, send 10^8 for 1 token
+        0,
+      ),
+    );
+    return tx
+      .serialize({
+        requireAllSignatures: false,
+      })
+      .toString('base64');
+  }
 }

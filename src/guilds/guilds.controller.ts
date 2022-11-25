@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { BuyBadgeDto } from './dto/buy-badge.dto';
-import { UpdateBadgeHistoryDto } from './dto/update-badge-history.dto';
-import { CreateBadgeTransactionDto } from './dto/create-badge-transaction.dto';
 import { RaiseBadgeRequestDto } from './dto/raise-badge-request.dto';
+import { RentBadgeDto } from './dto/rent-badge.dto';
+import { UpdateBadgeHistoryDto } from './dto/update-badge-history.dto';
 import { GuildsService } from './guilds.service';
 
 @ApiTags('guilds')
@@ -33,6 +33,11 @@ export class GuildsController {
     }));
   }
 
+  @Get('getBadges/:publicKey')
+  async getBadges(@Param('publicKey') publicKey: string) {
+    return await this.guildsService.getBadges(publicKey);
+  }
+
   @Post('buyBadge')
   async buyBadge(@Body() body: BuyBadgeDto) {
     body.status = 'draft';
@@ -43,5 +48,11 @@ export class GuildsController {
   updateBadgeHistory(@Body() body: UpdateBadgeHistoryDto) {
     body.status = 'pending';
     return this.guildsService.updateBadgeHistory(body);
+  }
+
+  @Post('rentBadge')
+  rentBadge(@Body() body: RentBadgeDto) {
+    body.status = 'draft';
+    return this.guildsService.rentBadge(body);
   }
 }
