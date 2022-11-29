@@ -11,6 +11,16 @@ import { GuildsService } from './guilds.service';
 export class GuildsController {
   constructor(private readonly guildsService: GuildsService) {}
 
+  @Post('buyBadge')
+  buyBadge(@Body() body: BuyBadgeDto) {
+    return this.guildsService.buyBadge(body);
+  }
+
+  @Post('updateBadgeHistory')
+  updateBadgeHistory(@Body() body: UpdateBadgeHistoryDto) {
+    return this.guildsService.updateBadgeHistory(body);
+  }
+
   @Post('raiseBadgeRequest')
   raiseBadgeRequest(@Body() body: RaiseBadgeRequestDto) {
     body.status = 'pending';
@@ -36,18 +46,6 @@ export class GuildsController {
   @Get('getBadges/:publicKey')
   async getBadges(@Param('publicKey') publicKey: string) {
     return await this.guildsService.getBadges(publicKey);
-  }
-
-  @Post('buyBadge')
-  async buyBadge(@Body() body: BuyBadgeDto) {
-    body.status = 'draft';
-    return await this.guildsService.buyBadge(body);
-  }
-
-  @Post('updateBadgeHistory')
-  updateBadgeHistory(@Body() body: UpdateBadgeHistoryDto) {
-    body.status = 'pending';
-    return this.guildsService.updateBadgeHistory(body);
   }
 
   @Post('rentBadge')

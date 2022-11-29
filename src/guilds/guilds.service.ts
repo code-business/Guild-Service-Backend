@@ -6,7 +6,12 @@ import {
   createTransferCheckedInstruction,
   getAssociatedTokenAddress,
 } from '@solana/spl-token';
-import { PublicKey, Transaction } from '@solana/web3.js';
+import {
+  clusterApiUrl,
+  Connection,
+  PublicKey,
+  Transaction,
+} from '@solana/web3.js';
 import { Model } from 'mongoose';
 import { BuyBadgeDto } from './dto/buy-badge.dto';
 import { RaiseBadgeRequestDto } from './dto/raise-badge-request.dto';
@@ -20,11 +25,13 @@ import {
   BadgeRequests,
   BadgeRequestsDocument,
 } from './schemas/badge-requests.schema';
-import { Connection, clusterApiUrl } from '@solana/web3.js';
 
 @Injectable()
 export class GuildsService {
   private connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
+  private GARI_WALLET_SECRET_KEY = new Uint8Array(
+    process.env.GARI_PRIVATE_KEY.split(',').map((e) => parseInt(e)),
+  );
 
   constructor(
     @InjectModel(BadgeRequests.name)
@@ -33,6 +40,60 @@ export class GuildsService {
     private badgeHistoryModel: Model<BadgeHistoryDocument>,
     private readonly httpService: HttpService,
   ) {}
+
+  async buyBadge(body: BuyBadgeDto) {
+    const { userId, publicKey, badgeType } = body;
+    const history = await this.badgeHistoryModel.findOne(
+      { userId, publicKey, badgeType, status: 'draft' },
+      'mint',
+    );
+    let response: any;
+    if (history) {
+      response = await this.httpService.axiosRef.post(
+        `${process.env.NFT_SERVICE_URL}/nft/update`,
+        {
+          usdToGari: 1,
+          mint: history.mint,
+          userPublicKey: publicKey,
+          badge: `Basic${badgeType}Badge`,
+          type: badgeType,
+        },
+      );
+      return response.data.transaction;
+    } else {
+      response = await this.httpService.axiosRef.post(
+        `${process.env.NFT_SERVICE_URL}/nft/create`,
+        {
+          feePayer: publicKey,
+          usdToGari: 1,
+          userPublicKey: publicKey,
+          badge: `Basic${badgeType}Badge`,
+          type: badgeType,
+        },
+      );
+      const encodedTransaction = response.data.transaction;
+      const buffer = Buffer.from(encodedTransaction, 'base64');
+      const decodedTransaction = Transaction.from(buffer);
+      const mint = decodedTransaction.signatures[1].publicKey;
+      await this.badgeHistoryModel.create({
+        userId,
+        publicKey,
+        badgeType,
+        mint,
+        status: 'draft',
+      });
+      return encodedTransaction;
+    }
+  }
+
+  updateBadgeHistory(body: UpdateBadgeHistoryDto) {
+    const { userId, publicKey, badgeType, signature } = body;
+    return this.badgeHistoryModel.findOneAndUpdate(
+      { userId, publicKey, badgeType, status: 'draft' },
+      { signature, status: 'pending' },
+      { new: true },
+    );
+  }
 
   raiseBadgeRequest(body: RaiseBadgeRequestDto) {
     return this.badgeRequestsModel.create(body);
@@ -62,33 +123,8 @@ export class GuildsService {
     return this.badgeRequestsModel.find({ status: 'pending' }).lean();
   }
 
-  async buyBadge(body: BuyBadgeDto) {
-    const { publicKey, badgeType } = body;
-    const badgeHistory = await this.badgeHistoryModel.create(body);
-    const response = await this.httpService.axiosRef.post(
-      `${process.env.NFT_SERVICE_URL}/nft/create`,
-      {
-        usdToGari: '100',
-        userPublicKey: publicKey,
-        badge: `Basic${badgeType}Badge`,
-        type: badgeType,
-        feePayer: publicKey,
-      },
-    );
-    return { id: badgeHistory._id, ...response.data };
-  }
-
   async getBadges(publicKey: string) {
     return this.badgeHistoryModel.find({ publicKey }).lean();
-  }
-
-  updateBadgeHistory(body: UpdateBadgeHistoryDto) {
-    const { id, mint, signature, status } = body;
-    return this.badgeHistoryModel.findByIdAndUpdate(
-      id,
-      { mint, signature, status },
-      { new: true },
-    );
   }
 
   async rentBadge(body: RentBadgeDto) {

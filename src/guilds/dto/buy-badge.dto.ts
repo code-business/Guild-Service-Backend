@@ -19,6 +19,4 @@ export class BuyBadgeDto {
     default: 'Creator',
   })
   badgeType: string;
-
-  status: string;
 }

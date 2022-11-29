@@ -6,19 +6,23 @@ export class UpdateBadgeHistoryDto {
   @ApiProperty({
     default: '1a',
   })
-  id: string;
+  userId: string;
 
   @IsNotEmpty()
   @ApiProperty({
     default: '9vMrXCFxuPZazMF1cDhLCdvMo65niHrZwMEWuozX9eMV',
   })
-  mint: string;
+  publicKey: string;
+
+  @IsNotEmpty()
+  @ApiProperty({
+    default: '9vMrXCFxuPZazMF1cDhLCdvMo65niHrZwMEWuozX9eMV',
+  })
+  badgeType: string;
 
   @IsNotEmpty()
   @ApiProperty({
     default: '9vMrXCFxuPZazMF1cDhLCdvMo65niHrZwMEWuozX9eMV',
   })
   signature: string;
-
-  status: string;
 }
