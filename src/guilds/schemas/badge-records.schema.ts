@@ -1,13 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
-export type BadgeHistoryDocument = HydratedDocument<BadgeHistory>;
+export type BadgeRecordsDocument = HydratedDocument<BadgeRecords>;
 
 @Schema({ timestamps: true, versionKey: false })
-export class BadgeHistory {
-  @Prop()
-  userId: string;
-
+export class BadgeRecords {
   @Prop()
   publicKey: string;
 
@@ -18,10 +15,7 @@ export class BadgeHistory {
   mint: string;
 
   @Prop()
-  signature: string;
-
-  @Prop()
   status: string;
 }
 
-export const BadgeHistorySchema = SchemaFactory.createForClass(BadgeHistory);
+export const BadgeRecordsSchema = SchemaFactory.createForClass(BadgeRecords);

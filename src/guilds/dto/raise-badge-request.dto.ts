@@ -19,6 +19,4 @@ export class RaiseBadgeRequestDto {
     default: 'Creator',
   })
   badgeType: string;
-
-  status: string;
 }

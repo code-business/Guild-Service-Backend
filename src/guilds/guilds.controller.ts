@@ -2,8 +2,7 @@ import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { BuyBadgeDto } from './dto/buy-badge.dto';
 import { RaiseBadgeRequestDto } from './dto/raise-badge-request.dto';
-import { RentBadgeDto } from './dto/rent-badge.dto';
-import { UpdateBadgeHistoryDto } from './dto/update-badge-history.dto';
+import { UpdateBadgeRecordDto } from './dto/update-badge-record.dto';
 import { GuildsService } from './guilds.service';
 
 @ApiTags('guilds')
@@ -11,25 +10,29 @@ import { GuildsService } from './guilds.service';
 export class GuildsController {
   constructor(private readonly guildsService: GuildsService) {}
 
+  @Get('getBadges/:publicKey')
+  getBadges(@Param('publicKey') publicKey: string) {
+    return this.guildsService.getBadges(publicKey);
+  }
+
   @Post('buyBadge')
   buyBadge(@Body() body: BuyBadgeDto) {
     return this.guildsService.buyBadge(body);
   }
 
-  @Post('updateBadgeHistory')
-  updateBadgeHistory(@Body() body: UpdateBadgeHistoryDto) {
-    return this.guildsService.updateBadgeHistory(body);
+  @Post('updateBadgeRecord')
+  updateBadgeRecord(@Body() body: UpdateBadgeRecordDto) {
+    return this.guildsService.updateBadgeRecord(body);
   }
 
   @Post('raiseBadgeRequest')
   raiseBadgeRequest(@Body() body: RaiseBadgeRequestDto) {
-    body.status = 'pending';
     return this.guildsService.raiseBadgeRequest(body);
   }
 
-  @Get('cancelBadgeRequest/:id')
-  cancelBadgeRequest(@Param('id') id: string) {
-    return this.guildsService.cancelBadgeRequest(id);
+  @Get('cancelBadgeRequest/:requestId')
+  cancelBadgeRequest(@Param('requestId') requestId: string) {
+    return this.guildsService.cancelBadgeRequest(requestId);
   }
 
   @Get('getLiveBadgeRequests')
@@ -41,16 +44,5 @@ export class GuildsController {
       ...request,
       ...minerInfo[index],
     }));
-  }
-
-  @Get('getBadges/:publicKey')
-  async getBadges(@Param('publicKey') publicKey: string) {
-    return await this.guildsService.getBadges(publicKey);
-  }
-
-  @Post('rentBadge')
-  rentBadge(@Body() body: RentBadgeDto) {
-    body.status = 'draft';
-    return this.guildsService.rentBadge(body);
   }
 }

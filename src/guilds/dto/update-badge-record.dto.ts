@@ -1,13 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty } from 'class-validator';
 
-export class UpdateBadgeHistoryDto {
-  @IsNotEmpty()
-  @ApiProperty({
-    default: '1a',
-  })
-  userId: string;
-
+export class UpdateBadgeRecordDto {
   @IsNotEmpty()
   @ApiProperty({
     default: '9vMrXCFxuPZazMF1cDhLCdvMo65niHrZwMEWuozX9eMV',

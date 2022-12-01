@@ -1,26 +1,20 @@
+import { Metaplex } from '@metaplex-foundation/js';
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import {
-  createAssociatedTokenAccountInstruction,
-  createTransferCheckedInstruction,
-  getAssociatedTokenAddress,
-} from '@solana/spl-token';
-import {
   clusterApiUrl,
   Connection,
-  PublicKey,
   Transaction,
+  PublicKey,
 } from '@solana/web3.js';
 import { Model } from 'mongoose';
 import { BuyBadgeDto } from './dto/buy-badge.dto';
-import { RaiseBadgeRequestDto } from './dto/raise-badge-request.dto';
-import { RentBadgeDto } from './dto/rent-badge.dto';
-import { UpdateBadgeHistoryDto } from './dto/update-badge-history.dto';
+import { UpdateBadgeRecordDto } from './dto/update-badge-record.dto';
 import {
-  BadgeHistory,
-  BadgeHistoryDocument,
-} from './schemas/badge-history.schema';
+  BadgeRecords,
+  BadgeRecordsDocument,
+} from './schemas/badge-records.schema';
 import {
   BadgeRequests,
   BadgeRequestsDocument,
@@ -28,32 +22,60 @@ import {
 
 @Injectable()
 export class GuildsService {
-  private connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
-  private GARI_WALLET_SECRET_KEY = new Uint8Array(
-    process.env.GARI_PRIVATE_KEY.split(',').map((e) => parseInt(e)),
-  );
+  private connection = new Connection(clusterApiUrl('devnet'));
+  private metaplex = new Metaplex(this.connection);
 
   constructor(
+    @InjectModel(BadgeRecords.name)
+    private badgeRecordsModel: Model<BadgeRecordsDocument>,
     @InjectModel(BadgeRequests.name)
     private badgeRequestsModel: Model<BadgeRequestsDocument>,
-    @InjectModel(BadgeHistory.name)
-    private badgeHistoryModel: Model<BadgeHistoryDocument>,
     private readonly httpService: HttpService,
   ) {}
 
+  async getBadges(publicKey: string) {
+    const records = await this.badgeRecordsModel.find({
+      publicKey,
+      status: { $in: ['pending', 'success'] },
+    });
+    if (!records.length) {
+      const myNfts = await this.metaplex.nfts().findAllByOwner({
+        owner: new PublicKey(publicKey),
+      });
+      myNfts.forEach(async ({ name, symbol, mintAddress }: any) => {
+        if (symbol === 'GARI') {
+          await this.badgeRecordsModel.updateOne(
+            { publicKey, mint: mintAddress },
+            {
+              publicKey,
+              badgeType: name === 'Petite Pyro' ? 'Creator' : 'User',
+              mint: mintAddress,
+              status: 'success',
+            },
+            { upsert: true },
+          );
+        }
+      });
+      return await this.badgeRecordsModel.find({
+        publicKey,
+        status: { $in: ['pending', 'success'] },
+      });
+    } else return records;
+  }
+
   async buyBadge(body: BuyBadgeDto) {
-    const { userId, publicKey, badgeType } = body;
-    const history = await this.badgeHistoryModel.findOne(
-      { userId, publicKey, badgeType, status: 'draft' },
+    const { publicKey, badgeType } = body;
+    const record = await this.badgeRecordsModel.findOne(
+      { publicKey, badgeType, status: 'draft' },
       'mint',
     );
     let response: any;
-    if (history) {
+    if (record) {
       response = await this.httpService.axiosRef.post(
         `${process.env.NFT_SERVICE_URL}/nft/update`,
         {
           usdToGari: 1,
-          mint: history.mint,
+          mint: record.mint,
           userPublicKey: publicKey,
           badge: `Basic${badgeType}Badge`,
           type: badgeType,
@@ -75,8 +97,7 @@ export class GuildsService {
       const buffer = Buffer.from(encodedTransaction, 'base64');
       const decodedTransaction = Transaction.from(buffer);
       const mint = decodedTransaction.signatures[1].publicKey;
-      await this.badgeHistoryModel.create({
-        userId,
+      await this.badgeRecordsModel.create({
         publicKey,
         badgeType,
         mint,
@@ -86,22 +107,22 @@ export class GuildsService {
     }
   }
 
-  updateBadgeHistory(body: UpdateBadgeHistoryDto) {
-    const { userId, publicKey, badgeType, signature } = body;
-    return this.badgeHistoryModel.findOneAndUpdate(
-      { userId, publicKey, badgeType, status: 'draft' },
+  updateBadgeRecord(body: UpdateBadgeRecordDto) {
+    const { publicKey, badgeType, signature } = body;
+    return this.badgeRecordsModel.findOneAndUpdate(
+      { publicKey, badgeType, status: 'draft' },
       { signature, status: 'pending' },
       { new: true },
     );
   }
 
-  raiseBadgeRequest(body: RaiseBadgeRequestDto) {
-    return this.badgeRequestsModel.create(body);
+  raiseBadgeRequest(body: any) {
+    return this.badgeRequestsModel.create({ ...body, status: 'pending' });
   }
 
-  cancelBadgeRequest(id: string) {
+  cancelBadgeRequest(requestId: string) {
     return this.badgeRequestsModel.findByIdAndUpdate(
-      id,
+      requestId,
       { status: 'cancelled' },
       { new: true },
     );
@@ -121,53 +142,5 @@ export class GuildsService {
 
   getLiveBadgeRequests() {
     return this.badgeRequestsModel.find({ status: 'pending' }).lean();
-  }
-
-  async getBadges(publicKey: string) {
-    return this.badgeHistoryModel.find({ publicKey }).lean();
-  }
-
-  async rentBadge(body: RentBadgeDto) {
-    const { lenderPublicKey, borrowerPublicKey, mint } = body;
-    const tokenAccountXPubkey = await getAssociatedTokenAddress(
-      new PublicKey(mint),
-      new PublicKey(lenderPublicKey),
-    );
-
-    const tokenAccountYPubkey = await getAssociatedTokenAddress(
-      new PublicKey(mint),
-      new PublicKey(borrowerPublicKey),
-    );
-
-    const tx = new Transaction();
-
-    const blockhashObj = await this.connection.getRecentBlockhash();
-    tx.recentBlockhash = blockhashObj.blockhash;
-    tx.feePayer = new PublicKey(lenderPublicKey);
-
-    tx.add(
-      createAssociatedTokenAccountInstruction(
-        new PublicKey(lenderPublicKey),
-        tokenAccountYPubkey,
-        new PublicKey(borrowerPublicKey),
-        new PublicKey(mint),
-      ),
-    );
-
-    tx.add(
-      createTransferCheckedInstruction(
-        tokenAccountXPubkey, // from (should be a token account)
-        new PublicKey(mint), // mint
-        tokenAccountYPubkey, // to (should be a token account)
-        new PublicKey(lenderPublicKey), // from's owner
-        1, // amount, if your deciamls is 8, send 10^8 for 1 token
-        0,
-      ),
-    );
-    return tx
-      .serialize({
-        requireAllSignatures: false,
-      })
-      .toString('base64');
   }
 }

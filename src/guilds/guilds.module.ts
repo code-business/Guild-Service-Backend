@@ -8,19 +8,20 @@ import {
   BadgeRequestsSchema,
 } from './schemas/badge-requests.schema';
 import {
-  BadgeHistory,
-  BadgeHistorySchema,
-} from './schemas/badge-history.schema';
+  BadgeRecords,
+  BadgeRecordsSchema,
+} from './schemas/badge-records.schema';
+import { CardinalService } from './cardinal/cardinal.service';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: BadgeRequests.name, schema: BadgeRequestsSchema },
-      { name: BadgeHistory.name, schema: BadgeHistorySchema },
+      { name: BadgeRecords.name, schema: BadgeRecordsSchema },
     ]),
     HttpModule,
   ],
   controllers: [GuildsController],
-  providers: [GuildsService],
+  providers: [GuildsService, CardinalService],
 })
 export class GuildsModule {}
