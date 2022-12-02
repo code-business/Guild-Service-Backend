@@ -18,5 +18,5 @@ export class UpdateBadgeRecordDto {
   @ApiProperty({
     default: '9vMrXCFxuPZazMF1cDhLCdvMo65niHrZwMEWuozX9eMV',
   })
-  signature: string;
+  mintAddress: string;
 }

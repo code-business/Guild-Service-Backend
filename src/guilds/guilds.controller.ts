@@ -3,6 +3,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { BuyBadgeDto } from './dto/buy-badge.dto';
 import { RaiseBadgeRequestDto } from './dto/raise-badge-request.dto';
 import { UpdateBadgeRecordDto } from './dto/update-badge-record.dto';
+import { UpdateBadgeRequestDto } from './dto/update-badge-request.dto';
 import { GuildsService } from './guilds.service';
 
 @ApiTags('guilds')
@@ -44,5 +45,15 @@ export class GuildsController {
       ...request,
       ...minerInfo[index],
     }));
+  }
+
+  @Post('updateBadgeRequest')
+  async updateBadgeRequest(@Body() body: UpdateBadgeRequestDto) {
+    return this.guildsService.updateBadgeRequest(body);
+  }
+
+  @Get('getLenderPortfolio/:publicKey')
+  getLenderPortfolio(@Param('publicKey') publicKey: string) {
+    return this.guildsService.getLenderPortfolio(publicKey);
   }
 }

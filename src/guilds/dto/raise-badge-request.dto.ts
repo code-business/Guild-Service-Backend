@@ -4,13 +4,7 @@ import { IsNotEmpty } from 'class-validator';
 export class RaiseBadgeRequestDto {
   @IsNotEmpty()
   @ApiProperty({
-    default: '1a',
-  })
-  requesterId: string;
-
-  @IsNotEmpty()
-  @ApiProperty({
-    default: '1a2b',
+    default: '2FeSUo4dxqiSJeH3zj2gMe2Mc4wehCYGn66Bx4tS6Cup',
   })
   requesterPublicKey: string;
 

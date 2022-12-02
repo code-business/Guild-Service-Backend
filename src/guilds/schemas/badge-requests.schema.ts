@@ -21,7 +21,7 @@ export class BadgeRequests {
   badgeType: string;
 
   @Prop()
-  badgePublicKey: string;
+  mintAddress: string;
 
   @Prop()
   allotmentDate: Date;
@@ -31,6 +31,9 @@ export class BadgeRequests {
 
   @Prop()
   revokeReason: string;
+
+  @Prop()
+  signature: string;
 
   @Prop()
   status: string;

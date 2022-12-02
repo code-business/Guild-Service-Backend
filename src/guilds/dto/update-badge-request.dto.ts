@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty } from 'class-validator';
 
-export class CreateBadgeTransactionDto {
+export class UpdateBadgeRequestDto {
   @IsNotEmpty()
   @ApiProperty({
     default: '637b18ca8ef642fd73b7fa58',
@@ -10,7 +10,7 @@ export class CreateBadgeTransactionDto {
 
   @IsNotEmpty()
   @ApiProperty({
-    default: '1a',
+    default: 'lender1',
   })
   lenderId: string;
 
@@ -24,11 +24,17 @@ export class CreateBadgeTransactionDto {
   @ApiProperty({
     default: '9vMrXCFxuPZazMF1cDhLCdvMo65niHrZwMEWuozX9eMV',
   })
-  badgePublicKey: string;
+  mintAddress: string;
 
   @IsNotEmpty()
   @ApiProperty({
-    default: '21 Nov, 2022',
+    default: '9vMrXCFxuPZazMF1cDhLCdvMo65niHrZwMEWuozX9eMV',
   })
-  allotmentDate: string;
+  signature: string;
+
+  @IsNotEmpty()
+  @ApiProperty({
+    default: '9vMrXCFxuPZazMF1cDhLCdvMo65niHrZwMEWuozX9eMV',
+  })
+  status: string;
 }

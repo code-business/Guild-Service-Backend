@@ -12,7 +12,7 @@ export class BadgeRecords {
   badgeType: string;
 
   @Prop()
-  mint: string;
+  mintAddress: string;
 
   @Prop()
   status: string;

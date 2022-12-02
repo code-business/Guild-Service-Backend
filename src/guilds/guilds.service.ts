@@ -11,6 +11,7 @@ import {
 import { Model } from 'mongoose';
 import { BuyBadgeDto } from './dto/buy-badge.dto';
 import { UpdateBadgeRecordDto } from './dto/update-badge-record.dto';
+import { BadgeRecordStatusEnum, BadgeTypeEnum } from './enum/guilds.enum';
 import {
   BadgeRecords,
   BadgeRecordsDocument,
@@ -33,85 +34,100 @@ export class GuildsService {
     private readonly httpService: HttpService,
   ) {}
 
-  async getBadges(publicKey: string) {
-    const records = await this.badgeRecordsModel.find({
+  getBadgeRecords(publicKey: string) {
+    return this.badgeRecordsModel.find({
       publicKey,
-      status: { $in: ['pending', 'success'] },
+      status: {
+        $in: [BadgeRecordStatusEnum.PENDING, BadgeRecordStatusEnum.SUCCESS],
+      },
     });
+  }
+
+  async getBadges(publicKey: string) {
+    const records = await this.getBadgeRecords(publicKey);
     if (!records.length) {
       const myNfts = await this.metaplex.nfts().findAllByOwner({
         owner: new PublicKey(publicKey),
       });
       myNfts.forEach(async ({ name, symbol, mintAddress }: any) => {
         if (symbol === 'GARI') {
+          const badgeType =
+            name === 'Petite Pyro' || name === 'Iron Creator'
+              ? BadgeTypeEnum.CREATOR
+              : BadgeTypeEnum.USER;
+          const status = BadgeRecordStatusEnum.SUCCESS;
           await this.badgeRecordsModel.updateOne(
-            { publicKey, mint: mintAddress },
             {
               publicKey,
-              badgeType: name === 'Petite Pyro' ? 'Creator' : 'User',
-              mint: mintAddress,
-              status: 'success',
+              badgeType,
+              mintAddress,
+              status,
+            },
+            {
+              publicKey,
+              badgeType,
+              mintAddress,
+              status,
             },
             { upsert: true },
           );
         }
       });
-      return await this.badgeRecordsModel.find({
-        publicKey,
-        status: { $in: ['pending', 'success'] },
-      });
+      return await this.getBadgeRecords(publicKey);
     } else return records;
   }
 
   async buyBadge(body: BuyBadgeDto) {
     const { publicKey, badgeType } = body;
-    const record = await this.badgeRecordsModel.findOne(
-      { publicKey, badgeType, status: 'draft' },
-      'mint',
-    );
-    let response: any;
-    if (record) {
+    const badgeRecord = await this.badgeRecordsModel.findOne({
+      publicKey,
+      badgeType,
+      status: 'draft',
+    });
+    let response: any, rawTransaction: any;
+    if (badgeRecord) {
       response = await this.httpService.axiosRef.post(
-        `${process.env.NFT_SERVICE_URL}/nft/update`,
+        `${process.env.NFT_SERVICE_URL}/nft/V2/update`,
         {
           usdToGari: 1,
-          mint: record.mint,
           userPublicKey: publicKey,
-          badge: `Basic${badgeType}Badge`,
+          mint: badgeRecord.mintAddress,
+          badge: '2x',
           type: badgeType,
         },
       );
-      return response.data.transaction;
+      rawTransaction = response.data.transaction;
+      return { badgeRecord, rawTransaction };
     } else {
       response = await this.httpService.axiosRef.post(
-        `${process.env.NFT_SERVICE_URL}/nft/create`,
+        `${process.env.NFT_SERVICE_URL}/nft/V2/create`,
         {
-          feePayer: publicKey,
           usdToGari: 1,
           userPublicKey: publicKey,
-          badge: `Basic${badgeType}Badge`,
+          badge: '2x',
           type: badgeType,
+          feePayer: publicKey,
         },
       );
-      const encodedTransaction = response.data.transaction;
-      const buffer = Buffer.from(encodedTransaction, 'base64');
+      rawTransaction = response.data.transaction;
+      const buffer = Buffer.from(rawTransaction, 'base64');
       const decodedTransaction = Transaction.from(buffer);
-      const mint = decodedTransaction.signatures[1].publicKey;
-      await this.badgeRecordsModel.create({
+      const mintAddress = decodedTransaction.signatures[1].publicKey;
+      const newBadgeRecord = await this.badgeRecordsModel.create({
         publicKey,
         badgeType,
-        mint,
+        mintAddress,
         status: 'draft',
       });
-      return encodedTransaction;
+      return { badgeRecord: newBadgeRecord, rawTransaction };
     }
   }
 
   updateBadgeRecord(body: UpdateBadgeRecordDto) {
-    const { publicKey, badgeType, signature } = body;
+    const { publicKey, badgeType, mintAddress } = body;
     return this.badgeRecordsModel.findOneAndUpdate(
-      { publicKey, badgeType, status: 'draft' },
-      { signature, status: 'pending' },
+      { publicKey, badgeType, mintAddress, status: 'draft' },
+      { status: 'pending' },
       { new: true },
     );
   }
@@ -142,5 +158,29 @@ export class GuildsService {
 
   getLiveBadgeRequests() {
     return this.badgeRequestsModel.find({ status: 'pending' }).lean();
+  }
+
+  updateBadgeRequest(body: any) {
+    const { requestId, lenderId, lenderPublicKey, mintAddress, signature } =
+      body;
+    return this.badgeRequestsModel.findByIdAndUpdate(
+      requestId,
+      {
+        lenderId,
+        lenderPublicKey,
+        mintAddress,
+        allotmentDate: new Date(),
+        signature,
+        status: 'lent',
+      },
+      { new: true },
+    );
+  }
+
+  getLenderPortfolio(lenderPublicKey: string) {
+    return this.badgeRequestsModel.find({
+      lenderPublicKey,
+      status: 'lent',
+    });
   }
 }
