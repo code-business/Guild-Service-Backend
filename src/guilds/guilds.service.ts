@@ -1,18 +1,12 @@
+import { Metaplex } from '@metaplex-foundation/js';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { clusterApiUrl, Connection, PublicKey } from '@solana/web3.js';
 import { Model } from 'mongoose';
 import {
   BadgeRecordStatusEnum,
   BadgeRequestStatusEnum,
-  BadgeTypeEnum,
 } from '../shared/enum/guilds.enum';
-import {
-  clusterApiUrl,
-  Connection,
-  PublicKey,
-  Transaction,
-} from '@solana/web3.js';
-import { UpdateBadgeRecordDto } from './dto/update-badge-record.dto';
 import {
   BadgeRecords,
   BadgeRecordsDocument,
@@ -21,13 +15,13 @@ import {
   BadgeRequests,
   BadgeRequestsDocument,
 } from './schemas/badge-requests.schema';
-import { Metadata, Metaplex } from '@metaplex-foundation/js';
 
 @Injectable()
 export class GuildsService {
   private connection = new Connection(clusterApiUrl('devnet'));
   // private connection = new Connection(constant.SOLANA_API);
   private metaplex = new Metaplex(this.connection);
+
   constructor(
     @InjectModel(BadgeRecords.name)
     private badgeRecordsModel: Model<BadgeRecordsDocument>,

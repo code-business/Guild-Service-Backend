@@ -4,7 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { GuildsModule } from './guilds/guilds.module';
-import constants from './constants'
+import constants from './constants';
 
 @Module({
   imports: [

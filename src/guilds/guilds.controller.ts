@@ -1,31 +1,22 @@
-import { Metadata, Metaplex } from '@metaplex-foundation/js';
+import { Metadata } from '@metaplex-foundation/js';
 import { HttpService } from '@nestjs/axios';
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import {
-  clusterApiUrl,
-  Connection,
-  PublicKey,
-  Transaction,
-} from '@solana/web3.js';
+import { Transaction } from '@solana/web3.js';
 import {
   BadgeRecordStatusEnum,
   BadgeTypeEnum,
 } from 'src/shared/enum/guilds.enum';
+import constant from '../constants';
 import { BuyBadgeDto } from './dto/buy-badge.dto';
 import { RaiseBadgeRequestDto } from './dto/raise-badge-request.dto';
 import { UpdateBadgeRecordDto } from './dto/update-badge-record.dto';
 import { UpdateBadgeRequestDto } from './dto/update-badge-request.dto';
 import { GuildsService } from './guilds.service';
-import constant from '../constants'
 
 @ApiTags('guilds')
 @Controller('guilds')
 export class GuildsController {
-  private connection = new Connection(clusterApiUrl('devnet'));
-  // private connection = new Connection(constant.SOLANA_API);
-  private metaplex = new Metaplex(this.connection);
-
   constructor(
     private readonly guildsService: GuildsService,
     private readonly httpService: HttpService,
@@ -35,7 +26,7 @@ export class GuildsController {
   async getBadges(@Param('publicKey') publicKey: string) {
     const badgeRecords = await this.guildsService.getBadgeRecords(publicKey);
     if (!badgeRecords.length) {
-      const myNfts = await this.guildsService.getMyBadges(publicKey)
+      const myNfts = await this.guildsService.getMyBadges(publicKey);
       for (const metadata of myNfts) {
         const { mintAddress, name, symbol } = metadata as Metadata;
         if (
