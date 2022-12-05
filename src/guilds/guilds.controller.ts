@@ -35,9 +35,7 @@ export class GuildsController {
   async getBadges(@Param('publicKey') publicKey: string) {
     const badgeRecords = await this.guildsService.getBadgeRecords(publicKey);
     if (!badgeRecords.length) {
-      const myNfts = await this.metaplex.nfts().findAllByOwner({
-        owner: new PublicKey(publicKey),
-      });
+      const myNfts = await this.guildsService.getMyBadges(publicKey)
       for (let i = 0; i < myNfts.length; i++) {
         const { mintAddress, name, symbol } = myNfts[i] as Metadata;
         if (symbol === 'GARI') {
