@@ -1,17 +1,11 @@
-import { Metaplex } from '@metaplex-foundation/js';
-import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import {
-  clusterApiUrl,
-  Connection,
-  Transaction,
-  PublicKey,
-} from '@solana/web3.js';
 import { Model } from 'mongoose';
-import { BuyBadgeDto } from './dto/buy-badge.dto';
+import {
+  BadgeRecordStatusEnum,
+  BadgeTypeEnum,
+} from '../shared/enum/guilds.enum';
 import { UpdateBadgeRecordDto } from './dto/update-badge-record.dto';
-import { BadgeRecordStatusEnum, BadgeTypeEnum } from './enum/guilds.enum';
 import {
   BadgeRecords,
   BadgeRecordsDocument,
@@ -23,15 +17,11 @@ import {
 
 @Injectable()
 export class GuildsService {
-  private connection = new Connection(clusterApiUrl('devnet'));
-  private metaplex = new Metaplex(this.connection);
-
   constructor(
     @InjectModel(BadgeRecords.name)
     private badgeRecordsModel: Model<BadgeRecordsDocument>,
     @InjectModel(BadgeRequests.name)
     private badgeRequestsModel: Model<BadgeRequestsDocument>,
-    private readonly httpService: HttpService,
   ) {}
 
   getBadgeRecords(publicKey: string) {
@@ -43,84 +33,21 @@ export class GuildsService {
     });
   }
 
-  async getBadges(publicKey: string) {
-    const records = await this.getBadgeRecords(publicKey);
-    if (!records.length) {
-      const myNfts = await this.metaplex.nfts().findAllByOwner({
-        owner: new PublicKey(publicKey),
-      });
-      myNfts.forEach(async ({ name, symbol, mintAddress }: any) => {
-        if (symbol === 'GARI') {
-          const badgeType =
-            name === 'Petite Pyro' || name === 'Iron Creator'
-              ? BadgeTypeEnum.CREATOR
-              : BadgeTypeEnum.USER;
-          const status = BadgeRecordStatusEnum.SUCCESS;
-          await this.badgeRecordsModel.updateOne(
-            {
-              publicKey,
-              badgeType,
-              mintAddress,
-              status,
-            },
-            {
-              publicKey,
-              badgeType,
-              mintAddress,
-              status,
-            },
-            { upsert: true },
-          );
-        }
-      });
-      return await this.getBadgeRecords(publicKey);
-    } else return records;
+  addBadgeRecord(doc: any) {
+    return this.badgeRecordsModel.create(doc);
   }
 
-  async buyBadge(body: BuyBadgeDto) {
-    const { publicKey, badgeType } = body;
-    const badgeRecord = await this.badgeRecordsModel.findOne({
+  addDraftBadgeRecord(
+    publicKey: string,
+    badgeType: string,
+    mintAddress: string,
+  ) {
+    return this.badgeRecordsModel.create({
       publicKey,
       badgeType,
-      status: 'draft',
+      mintAddress,
+      status: BadgeRecordStatusEnum.DRAFT,
     });
-    let response: any, rawTransaction: any;
-    if (badgeRecord) {
-      response = await this.httpService.axiosRef.post(
-        `${process.env.NFT_SERVICE_URL}/nft/V2/update`,
-        {
-          usdToGari: 1,
-          userPublicKey: publicKey,
-          mint: badgeRecord.mintAddress,
-          badge: '2x',
-          type: badgeType,
-        },
-      );
-      rawTransaction = response.data.transaction;
-      return { badgeRecord, rawTransaction };
-    } else {
-      response = await this.httpService.axiosRef.post(
-        `${process.env.NFT_SERVICE_URL}/nft/V2/create`,
-        {
-          usdToGari: 1,
-          userPublicKey: publicKey,
-          badge: '2x',
-          type: badgeType,
-          feePayer: publicKey,
-        },
-      );
-      rawTransaction = response.data.transaction;
-      const buffer = Buffer.from(rawTransaction, 'base64');
-      const decodedTransaction = Transaction.from(buffer);
-      const mintAddress = decodedTransaction.signatures[1].publicKey;
-      const newBadgeRecord = await this.badgeRecordsModel.create({
-        publicKey,
-        badgeType,
-        mintAddress,
-        status: 'draft',
-      });
-      return { badgeRecord: newBadgeRecord, rawTransaction };
-    }
   }
 
   updateBadgeRecord(body: UpdateBadgeRecordDto) {

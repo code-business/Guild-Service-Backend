@@ -11,7 +11,6 @@ import {
   BadgeRecords,
   BadgeRecordsSchema,
 } from './schemas/badge-records.schema';
-import { CardinalService } from './cardinal/cardinal.service';
 
 @Module({
   imports: [
@@ -22,6 +21,6 @@ import { CardinalService } from './cardinal/cardinal.service';
     HttpModule,
   ],
   controllers: [GuildsController],
-  providers: [GuildsService, CardinalService],
+  providers: [GuildsService],
 })
 export class GuildsModule {}

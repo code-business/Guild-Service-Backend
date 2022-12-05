@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty } from 'class-validator';
-import { BadgeTypeEnum } from '../enum/guilds.enum';
+import { BadgeTypeEnum } from '../../shared/enum/guilds.enum';
 
 export class BuyBadgeDto {
   @IsNotEmpty()

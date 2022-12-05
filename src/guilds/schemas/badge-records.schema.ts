@@ -16,6 +16,9 @@ export class BadgeRecords {
 
   @Prop()
   status: string;
+
+  @Prop()
+  signature: string;
 }
 
 export const BadgeRecordsSchema = SchemaFactory.createForClass(BadgeRecords);
