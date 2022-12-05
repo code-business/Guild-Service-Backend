@@ -17,12 +17,13 @@ import { RaiseBadgeRequestDto } from './dto/raise-badge-request.dto';
 import { UpdateBadgeRecordDto } from './dto/update-badge-record.dto';
 import { UpdateBadgeRequestDto } from './dto/update-badge-request.dto';
 import { GuildsService } from './guilds.service';
+import constant from '../constants'
 
 @ApiTags('guilds')
 @Controller('guilds')
 export class GuildsController {
   private connection = new Connection(clusterApiUrl('devnet'));
-  // private connection = new Connection(process.env.SOLANA_API);
+  // private connection = new Connection(constant.SOLANA_API);
   private metaplex = new Metaplex(this.connection);
 
   constructor(
@@ -61,7 +62,7 @@ export class GuildsController {
   async buyBadge(@Body() body: BuyBadgeDto) {
     const { publicKey, badgeType } = body;
     const response = await this.httpService.axiosRef.post(
-      `${process.env.NFT_SERVICE_URL}/nft/V2/create`,
+      `${constant.NFT_SERVICE_URL}/nft/V2/create`,
       {
         usdToGari: 1,
         userPublicKey: publicKey,
