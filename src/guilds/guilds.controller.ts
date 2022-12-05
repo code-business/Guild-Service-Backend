@@ -37,14 +37,17 @@ export class GuildsController {
       const myNfts = await this.metaplex.nfts().findAllByOwner({
         owner: new PublicKey(publicKey),
       });
-      for (let i = 0; i < myNfts.length; i++) {
-        const { mintAddress, name, symbol } = myNfts[i] as Metadata;
-        if (symbol === 'GARI') {
+      for (const metadata of myNfts) {
+        const { mintAddress, name, symbol } = metadata as Metadata;
+        if (
+          symbol === 'GARI' &&
+          (name === 'Iron Creator' || name === 'Iron User')
+        ) {
           const doc = {
             publicKey,
             mintAddress,
             badgeType:
-              name === 'Petite Pyro' || name === 'Iron Creator'
+              name === 'Iron Creator'
                 ? BadgeTypeEnum.CREATOR
                 : BadgeTypeEnum.USER,
             status: BadgeRecordStatusEnum.SUCCESS,
@@ -84,12 +87,18 @@ export class GuildsController {
 
   @Post('updateBadgeRecord')
   updateBadgeRecord(@Body() body: UpdateBadgeRecordDto) {
-    return this.guildsService.updateBadgeRecord(body);
+    const { publicKey, badgeType, mintAddress } = body;
+    return this.guildsService.updateBadgeRecord(
+      publicKey,
+      badgeType,
+      mintAddress,
+    );
   }
 
   @Post('raiseBadgeRequest')
   raiseBadgeRequest(@Body() body: RaiseBadgeRequestDto) {
-    return this.guildsService.raiseBadgeRequest(body);
+    const { requesterPublicKey, badgeType } = body;
+    return this.guildsService.raiseBadgeRequest(requesterPublicKey, badgeType);
   }
 
   @Get('cancelBadgeRequest/:requestId')

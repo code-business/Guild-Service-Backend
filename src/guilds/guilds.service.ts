@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
   BadgeRecordStatusEnum,
+  BadgeRequestStatusEnum,
   BadgeTypeEnum,
 } from '../shared/enum/guilds.enum';
 import { UpdateBadgeRecordDto } from './dto/update-badge-record.dto';
@@ -50,17 +51,25 @@ export class GuildsService {
     });
   }
 
-  updateBadgeRecord(body: UpdateBadgeRecordDto) {
-    const { publicKey, badgeType, mintAddress } = body;
+  updateBadgeRecord(publicKey: string, badgeType: string, mintAddress: string) {
     return this.badgeRecordsModel.findOneAndUpdate(
-      { publicKey, badgeType, mintAddress, status: 'draft' },
+      {
+        publicKey,
+        badgeType,
+        mintAddress,
+        status: BadgeRecordStatusEnum.DRAFT,
+      },
       { status: 'pending' },
       { new: true },
     );
   }
 
-  raiseBadgeRequest(body: any) {
-    return this.badgeRequestsModel.create({ ...body, status: 'pending' });
+  raiseBadgeRequest(requesterPublicKey: string, badgeType: string) {
+    return this.badgeRequestsModel.create({
+      requesterPublicKey,
+      badgeType,
+      status: BadgeRequestStatusEnum.ACTIVE,
+    });
   }
 
   cancelBadgeRequest(requestId: string) {
