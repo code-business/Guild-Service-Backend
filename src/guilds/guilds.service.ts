@@ -20,6 +20,7 @@ import {
   BadgeRequests,
   BadgeRequestsDocument,
 } from './schemas/badge-requests.schema';
+import constants from '../constants'
 
 @Injectable()
 export class GuildsService {
@@ -87,7 +88,7 @@ export class GuildsService {
     let response: any, rawTransaction: any;
     if (badgeRecord) {
       response = await this.httpService.axiosRef.post(
-        `${process.env.NFT_SERVICE_URL}/nft/V2/update`,
+        `${constants.NFT_SERVICE_URL}/nft/V2/update`,
         {
           usdToGari: 1,
           userPublicKey: publicKey,
@@ -100,7 +101,7 @@ export class GuildsService {
       return { badgeRecord, rawTransaction };
     } else {
       response = await this.httpService.axiosRef.post(
-        `${process.env.NFT_SERVICE_URL}/nft/V2/create`,
+        `${constants.NFT_SERVICE_URL}/nft/V2/create`,
         {
           usdToGari: 1,
           userPublicKey: publicKey,
