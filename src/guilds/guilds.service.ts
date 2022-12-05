@@ -6,6 +6,12 @@ import {
   BadgeRequestStatusEnum,
   BadgeTypeEnum,
 } from '../shared/enum/guilds.enum';
+import {
+  clusterApiUrl,
+  Connection,
+  PublicKey,
+  Transaction,
+} from '@solana/web3.js';
 import { UpdateBadgeRecordDto } from './dto/update-badge-record.dto';
 import {
   BadgeRecords,
@@ -15,9 +21,13 @@ import {
   BadgeRequests,
   BadgeRequestsDocument,
 } from './schemas/badge-requests.schema';
+import { Metadata, Metaplex } from '@metaplex-foundation/js';
 
 @Injectable()
 export class GuildsService {
+  private connection = new Connection(clusterApiUrl('devnet'));
+  // private connection = new Connection(constant.SOLANA_API);
+  private metaplex = new Metaplex(this.connection);
   constructor(
     @InjectModel(BadgeRecords.name)
     private badgeRecordsModel: Model<BadgeRecordsDocument>,
@@ -117,6 +127,12 @@ export class GuildsService {
     return this.badgeRequestsModel.find({
       lenderPublicKey,
       status: 'lent',
+    });
+  }
+
+  getMyBadges(publicKey: string) {
+    return this.metaplex.nfts().findAllByOwner({
+      owner: new PublicKey(publicKey),
     });
   }
 }
