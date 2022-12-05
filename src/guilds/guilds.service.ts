@@ -15,6 +15,7 @@ import {
   BadgeRequests,
   BadgeRequestsDocument,
 } from './schemas/badge-requests.schema';
+import { Transaction } from '@solana/web3.js';
 
 @Injectable()
 export class GuildsService {
@@ -128,5 +129,11 @@ export class GuildsService {
     return this.metaplex.nfts().findAllByOwner({
       owner: new PublicKey(publicKey),
     });
+  }
+
+  getMintAddress(encodetransaction: any) {
+    const decodedTransaction = Transaction.from(Buffer.from(encodetransaction, 'base64'));
+    const mintAddress = decodedTransaction.signatures[1].publicKey.toString();
+    return mintAddress;
   }
 }
