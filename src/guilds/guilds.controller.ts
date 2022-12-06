@@ -24,9 +24,11 @@ export class GuildsController {
   @Get('getBadges/:publicKey')
   async getBadges(@Param('publicKey') publicKey: string) {
     try {
-      const badgeRecords = await this.guildsService.getBadgeRecords(publicKey);
+      const badgeRecords = await this.guildsService.getBadgesFromDB(publicKey);
       if (!badgeRecords.length) {
-        const myNfts = await this.guildsService.getMyBadges(publicKey);
+        const myNfts = await this.guildsService.getBadgesFromMetaplex(
+          publicKey,
+        );
         for (const metadata of myNfts) {
           const { mintAddress, name, symbol } = metadata as Metadata;
           if (
@@ -42,7 +44,7 @@ export class GuildsController {
                   : BadgeTypeEnum.USER,
               status: BadgeRecordStatusEnum.SUCCESS,
             };
-            const newBadgeRecord = await this.guildsService.addBadgeRecord(
+            const newBadgeRecord = await this.guildsService.saveBadgesToDB(
               badgeRecord,
             );
             badgeRecords.push(newBadgeRecord);
@@ -99,6 +101,11 @@ export class GuildsController {
         badgeType,
         mintAddress,
       );
+      return {
+        code: 200,
+        message: 'success',
+        data: response,
+      };
     } catch (error) {
       return {
         code: 400,

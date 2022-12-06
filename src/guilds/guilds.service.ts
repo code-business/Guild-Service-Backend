@@ -30,7 +30,7 @@ export class GuildsService {
     private badgeRequestsModel: Model<BadgeRequestsDocument>,
   ) {}
 
-  getBadgeRecords(publicKey: string) {
+  getBadgesFromDB(publicKey: string) {
     return this.badgeRecordsModel.find({
       publicKey,
       status: {
@@ -39,7 +39,13 @@ export class GuildsService {
     });
   }
 
-  addBadgeRecord(doc: any) {
+  getBadgesFromMetaplex(publicKey: string) {
+    return this.metaplex.nfts().findAllByOwner({
+      owner: new PublicKey(publicKey),
+    });
+  }
+
+  saveBadgesToDB(doc: any) {
     return this.badgeRecordsModel.create(doc);
   }
 
@@ -98,7 +104,9 @@ export class GuildsService {
   }
 
   getLiveBadgeRequests() {
-    return this.badgeRequestsModel.find({ status: 'pending' }).lean();
+    return this.badgeRequestsModel
+      .find({ status: BadgeRequestStatusEnum.ACTIVE })
+      .lean();
   }
 
   updateBadgeRequest(body: any) {
@@ -125,14 +133,10 @@ export class GuildsService {
     });
   }
 
-  getMyBadges(publicKey: string) {
-    return this.metaplex.nfts().findAllByOwner({
-      owner: new PublicKey(publicKey),
-    });
-  }
-
   getMintAddress(encodetransaction: any) {
-    const decodedTransaction = Transaction.from(Buffer.from(encodetransaction, 'base64'));
+    const decodedTransaction = Transaction.from(
+      Buffer.from(encodetransaction, 'base64'),
+    );
     const mintAddress = decodedTransaction.signatures[1].publicKey.toString();
     return mintAddress;
   }
